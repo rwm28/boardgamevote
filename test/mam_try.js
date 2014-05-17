@@ -1,4 +1,4 @@
-var _ = require('underscore');
+//var _ = require('underscore'); //look at this again, this is probably not how this works
 
 exports.maximizeAffirmedMajorities = function (votes) {
 //sauce: http://alumnus.caltech.edu/~seppley/MAM%20procedure%20definition.htm
@@ -125,11 +125,31 @@ exports.maximizeAffirmedMajorities = function (votes) {
 	for(i = 0; i < majorities.length; i++) {
 		maj = majorities[i];
 		//conditionally affirm the majority represented by majority[i], which remember is Y OVER X. This is confusing, sorry. I should probably change it.
-		if(finishOver[maj.xid].
+		if(!finishOver[maj.xid].YoverX[maj.yid] && !finishOver[maj.yid].YoverX[maj.xid]) {
+           finishOver = affirm(candidates, finishOver, maj.yid, maj.xid); //if finishOver is passed by reference, then the assignment is unnecessary, but hey, why not
+        }
 	}
 	
 	
 }
+
+function affirm(candidates, finishOver, yid, xid) { //affirm majority Y over X in affirmation table finishOver[yid].YoverX[xid]
+    
+    finishOver[yid].YoverX[xid] = true;
+    var aid = candidates[i];
+    
+    for(i = 0; i < candidates.length; i++) {
+        if(finishOver[aid].YoverX[yid] && !finishOver[aid].YoverX[xid]) {
+            affirm(candidates, finishOver, aid, xid);
+        }
+       
+        if(finishOver[xid]YoverX[aid] && !finishOver[yid].YoverX[aid]) {
+            affirm(candidates, finishOver, yid, aid);
+        }
+    }
+    
+}
+
 
 //implement Random Voter Hierarchy algorithm from MAM definition (see sauce above). Return a strictly ordered list of candidates for tiebreaking purposes.
 function randomVoterHierarchy(Vyx) { //expects Vyx ballot table generated in exports.maximizeAffirmedMajorities
