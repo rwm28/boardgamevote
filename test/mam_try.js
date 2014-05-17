@@ -5,7 +5,7 @@ exports.maximizeAffirmedMajorities = function (votes) {
 
 	var Vyx = {}, majorities = [], candidates = [], pairs = [], finishOver = {},
 	i, x, y, xj, xk, yj, yk,
-	vote, tiebreak maj={};
+	vote, tiebreak, maj={};
 
 	/*'votes' is an array of ballot objects, with fields '_id', 'vote', 'nickname', and 'ballot'. votes[0].vote is the vote object for the first ballot. A vote object is an array
 	of arrays of arbitrary length, containing all candidates voted on that ballot in ranked order, with ties allowed. votes[0].vote[0] is an array of all candidates ranked first
@@ -114,7 +114,7 @@ exports.maximizeAffirmedMajorities = function (votes) {
 	
 	//initialize finishOver array to x by y, all false
 	for(y = 0; y < candidates.length; y++) {
-		finishOver[candidates[y] = {YoverX: {}}; //Y over X based on how Vyx was originally constructed. I should probably change this.
+		finishOver[candidates[y]] = {YoverX: {}}; //Y over X based on how Vyx was originally constructed. I should probably change this.
 		pairs = _.keys(Vyx[candidates[y]].yx);
 		for(x = 0; x < pairs.length; x++) {
 			finishOver[candidates[y]].YoverX[pairs[x]] = false;
@@ -148,6 +148,7 @@ function affirm(candidates, finishOver, yid, xid) { //affirm majority Y over X i
         }
     }
     
+    return finishOver;
 }
 
 
