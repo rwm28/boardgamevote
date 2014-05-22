@@ -3,9 +3,9 @@
 exports.maximizeAffirmedMajorities = function (votes) {
 //sauce: http://alumnus.caltech.edu/~seppley/MAM%20procedure%20definition.htm
 
-	var Vyx = {}, majorities = [], candidates = [], pairs = [], finishOver = {},
-	i, x, y, xj, xk, yj, yk,
-	vote, tiebreak, maj={};
+	var Vyx = {}, majorities = [], candidates = [], pairs = [], finishOver = {}, maj={}, topAlternatives = [],
+	i, j, x, y, xj, xk, yj, yk,
+	vote, tiebreak;
 
 	/*'votes' is an array of ballot objects, with fields '_id', 'vote', 'nickname', and 'ballot'. votes[0].vote is the vote object for the first ballot. A vote object is an array
 	of arrays of arbitrary length, containing all candidates voted on that ballot in ranked order, with ties allowed. votes[0].vote[0] is an array of all candidates ranked first
@@ -33,7 +33,7 @@ exports.maximizeAffirmedMajorities = function (votes) {
 				} 
 			}
 		}
-	} //when this loop is done, V is the vote table. V[vote[xj][xk]].yx[vote[yj][yk]] is the number of pairwise defeats for candidate vote[yj][yk] over candidate vote[xj][xk].
+	} //when this loop is done, Vyx is the vote table. Vyx[vote[xj][xk]].yx[vote[yj][yk]] is the number of pairwise defeats for candidate vote[yj][yk] over candidate vote[xj][xk].
 	
 	//construct and sort a list of majorities. I think you have to do the above quad-loop completely before starting this one, because you need the final pairwise vote tallies.
 	candidates = _.keys(Vyx); //candidates is an array of all the keys from Vxy, which means it's an array of all candidate IDs with at least one pairwise vote against. This is probably not elegant but I'm going with it.
@@ -119,7 +119,7 @@ exports.maximizeAffirmedMajorities = function (votes) {
 		for(x = 0; x < pairs.length; x++) {
 			finishOver[candidates[y]].YoverX[pairs[x]] = false;
 		}
-	}
+	}  
 	
 	//conditionally affirm majorities in majorities[] according to Seppley
 	for(i = 0; i < majorities.length; i++) {
@@ -129,22 +129,48 @@ exports.maximizeAffirmedMajorities = function (votes) {
            finishOver = affirm(candidates, finishOver, maj.yid, maj.xid); //if finishOver is passed by reference, then the assignment is unnecessary, but hey, why not
         }
 	}
-	
-	
+    
+    //construct list of top alternatives: list of all alternatives y such that finishOver[x].YoverX[y] is not true for any alternative x.
+    for(y = 0; y < candidates.length; y++) {
+        var promote = true;
+        for(x = 0; x < candidates.length; x++) {
+            if(promote && y != x && finishOver[candidates[x]].YoverX[candidates[y]]) {
+                promote = false;
+            }
+        }
+        
+        if(promote) { topAlternatives.push(candidates[y]); }
+    }
+    
+    //return the winner! if topAlternatives.length === 1, that's the winner; otherwise choose the top-ranking alternative from tiebreak.
+    if(topAlternatives.length === 1) { return topAlternatives[0]; }
+    
+    var min = Number.MAX_VALUE;
+    for(i = 0; i < topAlternatives.length; i++) {
+        for(j = 0; j < tiebreak.length; j++) {
+            if(tiebreak[j] === topAlternatives[i] && j < min) {
+                min = j;
+            }
+        }
+    }
+    
+    return topAlternatives[min];
 }
 
-function affirm(candidates, finishOver, yid, xid) { //affirm majority Y over X in affirmation table finishOver[yid].YoverX[xid]
+//affirm majority Y over X in affirmation table finishOver[yid].YoverX[xid]
+function affirm(candidates, finishOver, yid, xid) {
     
     finishOver[yid].YoverX[xid] = true;
-    var aid = candidates[i];
+    var a;
     
     for(i = 0; i < candidates.length; i++) {
-        if(finishOver[aid].YoverX[yid] && !finishOver[aid].YoverX[xid]) {
-            affirm(candidates, finishOver, aid, xid);
+       a = candidates[i];
+        if(finishOver[a].YoverX[yid] && !finishOver[a].YoverX[xid]) {
+            return affirm(candidates, finishOver, a, xid);
         }
        
-        if(finishOver[xid]YoverX[aid] && !finishOver[yid].YoverX[aid]) {
-            affirm(candidates, finishOver, yid, aid);
+        if(finishOver[xid].YoverX[a] && !finishOver[yid].YoverX[a]) {
+           return affirm(candidates, finishOver, yid, a);
         }
     }
     
@@ -155,8 +181,13 @@ function affirm(candidates, finishOver, yid, xid) { //affirm majority Y over X i
 //implement Random Voter Hierarchy algorithm from MAM definition (see sauce above). Return a strictly ordered list of candidates for tiebreaking purposes.
 function randomVoterHierarchy(Vyx) { //expects Vyx ballot table generated in exports.maximizeAffirmedMajorities
 	
-	//var rvh = [], i;
+	var rvh = [], picked = {},
+        i;
+    
+    
+    
 	//I will do this section soon!
 	
+    
 	return _.keys(Vyx);
 }
